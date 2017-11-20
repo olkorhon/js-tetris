@@ -29,7 +29,6 @@ class GameArea {
         if (y < 0) {
             error = new Error("Y value below 0");
             error.specifics = `y(${y}) < 0`;
-            error.underBottom = true;
         }
         if (error) {
             throw error;
@@ -45,26 +44,72 @@ class GameArea {
         return this.area[x + y * this.bufferWidth];
     }
 
-    applyBlock(x, y, block) {
-        block.forEachElem((pos) => {
-            this.setTile(x + pos.x, y + pos.y, block.color);
+    applyBlock(pos, block) {
+        let touchedLines = {};
+        block.forEachElem((elemPos) => {
+            this.setTile(pos.x + elemPos.x, pos.y + elemPos.y, block.color);
+            touchedLines[(pos.y + elemPos.y).toString()] = true;
         });
+
+        let filteredLines = Object.keys(touchedLines).map(number => parseInt(number, 10));
+        let completeLines = filteredLines.filter(this.lineComplete.bind(this));
+
+        if (completeLines.length > 0)
+            this.removeLines(completeLines);
+    }
+
+    removeLines(lines) {
+        let offset = 0;
+        for (let j = 0; j < this.bufferHeight; j++) {
+            if (lines.includes(j)) {
+                offset --;
+                continue;
+            }
+
+            for (let i = 0; i < this.bufferWidth; i++) {
+                this.area[i + (j + offset) * this.bufferWidth] = this.area[i + j * this.bufferWidth];
+            }
+        }
+
+        for (let j = this.bufferHeight - 1 + offset; j <= this.bufferHeight; j++) {
+            for (let i = 0; i < this.bufferWidth; i++) {
+                this.area[i + j * this.bufferWidth] = undefined;
+            }
+        }
+    }
+
+    lineComplete(line) {
+        for (let i = 0; i < this.bufferWidth; i++) {
+            if (this.area[line * this.bufferWidth + i] === undefined)
+                return false;
+        }
+        return true;
+    }
+
+    checkCollision(pos, offset={x:0, y:0}) {
+        try {
+            return this.getTile(pos.x + offset.x, pos.y + offset.y) !== undefined;
+        } catch (error) {
+            return true;
+        }
     }
 
     draw() {
-        globals.context.rect(0, 0, 400, 800);
-        globals.context.stroke();
-
+        globals.context.strokeStyle = "#FFFFFF";
         for (let i = 0; i < this.bufferWidth; i++) {
             for (let j = 0; j < this.bufferHeight; j++) {
                 if (this.area[i + j * this.bufferWidth]) {
+                    globals.context.beginPath();
                     globals.context.fillStyle = this.area[i + j * this.bufferWidth];
-                    globals.context.fillRect(
+                    globals.context.rect(
                         40 * i,
                         -40 * j + globals.yOffset,
                         40, 40);
+                    globals.context.fill();
+                    globals.context.stroke();
                 }
             }
         }
+        
     }
 }
