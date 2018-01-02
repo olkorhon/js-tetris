@@ -1,133 +1,143 @@
-const gameArea = globals.gameArea = new GameArea(10, 40, 20);
-let currentBlock;
-
-let blockPos = {x: 3, y:20};
-
 let moveLocked = false;
 let moveBuffer;
 
-let kickOffsets = [
+const kickOffsets = [
     {x: -1, y:  0},
     {x:  1, y:  0},
     {x:  0, y: -1},
     {x:  0, y:  1}
 ];
 
-function start() {
-    globals.canvas = document.getElementById("canvas");
-    globals.context = canvas.getContext("2d");
-    globals.canvas.focus();
-    globals.canvas.style.background = "black";
+const scoreTable = [
+    [0, 40, 100, 300, 1200]
+];
 
-    globals.context.moveTo(0,0);
-    globals.gameArea.draw();
+class Game {
+    constructor(canvas, gameArea) {
+        this.gameCanvas = canvas;
+        this.gameArea = gameArea;
+        this.blockPos = {x: 3, y: 20};
 
-    currentBlock = generateBlock();
-    frame();
-}
+        this.currentBlock = generateBlock();
+        this.moveBuffer = undefined;
+        this.moveLocked = false;
 
-function genCopy(pos, offsetX, offsetY) {
-    return {x: pos.x + offsetX, y: pos.y + offsetY};
-}
-
-function onKeyboardEvent(e) {
-    let key = e.keyCode ? e.keyCode : e.which;
-    if (key == 38) {
-        if (moveLocked) moveBuffer = rotate;
-        else            rotate();
-    }
-    if (key == 40) {
-        if (moveLocked) moveBuffer = skipToContact;
-        else            skipToContact();
-    }
-    if (key == 37) {
-        if (moveLocked) moveBuffer = moveLeft;
-        else            moveLeft();
-    }
-    if (key == 39) {
-        if (moveLocked) moveBuffer = moveRight;
-        else            moveRight();
+        this.score = 0;
     }
 
-    refreshScreen();
-}
+    genCopy(pos, offsetX, offsetY) {
+        return {x: pos.x + offsetX, y: pos.y + offsetY};
+    }
 
-function rotate() {
-    if (!currentBlock.someRotatedElem(pos => gameArea.checkCollision(pos, blockPos))) {
-        //console.log("Good rotate!");
-        currentBlock.rotate();
-    } else {
-        // Try to kick from walls
-        for (let i = 0; i < kickOffsets.length; i++) {
-            let offset = genCopy(blockPos, kickOffsets[i].x, kickOffsets[i].y);
-            if (!currentBlock.someRotatedElem(pos => gameArea.checkCollision(pos, offset))) {
-                //console.log("Kicked!");
-                blockPos = genCopy(blockPos, kickOffsets[i].x, kickOffsets[i].y);
-                currentBlock.rotate();
-                break;
+    rotate() {
+        if (moveLocked) {
+            moveBuffer = rotate.bind(this);;
+            return;
+        }
+
+        if (!this.currentBlock.someRotatedElem(pos => this.gameArea.checkCollision(pos, this.blockPos))) {
+            //console.log("Good rotate!");
+            this.currentBlock.rotate();
+        } else {
+            // Try to kick from walls
+            for (let i = 0; i < kickOffsets.length; i++) {
+                let offset = genCopy(this.blockPos, kickOffsets[i].x, kickOffsets[i].y);
+                if (!this.currentBlock.someRotatedElem(pos => this.gameArea.checkCollision(pos, offset))) {
+                    //console.log("Kicked!");
+                    this.blockPos = genCopy(this.blockPos, kickOffsets[i].x, kickOffsets[i].y);
+                    this.currentBlock.rotate();
+                    break;
+                }
             }
         }
-    }
-}
 
-function skipToContact() {
-    while (!currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 0, -1)))) {
-        blockPos.y -= 1;
+        this.drawFrame();
     }
 
-    gameArea.applyBlock(blockPos, currentBlock);
-    createNewBlock();
-}
+    skipToContact() {
+        if (moveLocked) {
+            moveBuffer = skipToContact.bind(this);;
+            return;
+        }
 
-function moveLeft() {
-    if (!currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, -1, 0))))
-        blockPos.x -= 1;
-}
+        while (!this.currentBlock.someElem(
+            pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)))) {
+                this.blockPos.y -= 1;
+        }
 
-function moveRight() {
-    if (!currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 1, 0))))
-        blockPos.x += 1;
-}
+        this.placeTetromino();
+        this.createNewBlock();
 
-function createNewBlock() {
-    currentBlock = generateBlock(); 
-    blockPos = {x: 3, y: 20};
-}
-
-function frame() {
-    // Move block
-    moveLocked = true;
-    
-    // Check future
-    let collisionImminent = currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 0, -1)));
-    if (collisionImminent)
-    {
-        //console.log("Collision imminent");
-        gameArea.applyBlock(blockPos, currentBlock);
-        blockApplied = true;
-        createNewBlock();
-    }
-    else {
-        blockPos.y -= 1;
+        this.drawFrame();
     }
 
-    // Release move lock
-    moveLocked = false;
-    if (moveBuffer) {
-        moveBuffer();
-        moveBuffer = undefined;
+    moveLeft() {
+        if (moveLocked) {
+            moveBuffer = moveLeft.bind(this);;
+            return;
+        }
+
+        if (!this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, -1, 0))))
+            this.blockPos.x -= 1;
+
+        this.drawFrame();
     }
 
-    refreshScreen();
+    moveRight() {
+        if (moveLocked) {
+            moveBuffer = moveRight.bind(this);
+            return;
+        }
 
-    // Call the next frame after 500ms
-    setTimeout(frame, 500);
-}
+        if (!this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 1, 0))))
+            this.blockPos.x += 1;
 
-function refreshScreen() {
-    // Clear the current drawing area
-    globals.context.clearRect(0, 0, globals.canvas.width, globals.canvas.height);
+        this.drawFrame();
+    }
 
-    gameArea.draw();
-    currentBlock.draw(blockPos);
+    createNewBlock() {
+        this.currentBlock = generateBlock(); 
+        this.blockPos = {x: 3, y: 20};
+    }
+
+    advanceFrame() {
+        // Disable moving during update
+        moveLocked = true;
+        
+        // Check future
+        let collisionImminent = this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)));
+        if (collisionImminent)
+        {
+            this.placeTetromino();
+            this.createNewBlock();
+        }
+        else {
+            this.blockPos.y -= 1;
+        }
+
+        // Release move lock
+        moveLocked = false;
+        if (moveBuffer) {
+            moveBuffer();
+            moveBuffer = undefined;
+        }
+
+        this.drawFrame();
+    }
+
+    placeTetromino() {
+        const deletedLines = this.gameArea.applyBlock(this.blockPos, this.currentBlock);
+        if (deletedLines > 0) {
+            const pointValue = scoreTable[0][deletedLines];
+            this.score += pointValue;
+            emit("scoreChange", this.score, pointValue);
+        }
+    }
+
+    drawFrame() {
+        // Clear the current drawing area
+        this.gameCanvas.clear();
+        this.gameArea.draw(this.gameCanvas);
+        this.gameArea.drawSingleBlock(this.gameCanvas, this.blockPos, this.currentBlock);
+    }
 }

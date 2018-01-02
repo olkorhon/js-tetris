@@ -4,7 +4,7 @@ const colors = [
     "#FF7700"
 ];
 
-function generateBlock() {
+function generateBlock(blockSize) {
     let chosenTemplate = getRandomTetrominoe();
 
     const name = chosenTemplate.name;
@@ -12,14 +12,15 @@ function generateBlock() {
     const data = JSON.parse(JSON.stringify(chosenTemplate.template));
     const color = colors[Math.floor(Math.random() * colors.length)];
 
-    return new Block(name, size, data, color);
+    return new Block(name, size, data, color, blockSize);
 }
 
 class Block {
-    constructor(name, size, data, color) {
+    constructor(name, size, data, color, blockSize) {
         this.name = name;
         this.size = size;
         this.color = color;
+        this.blockSize = blockSize;
 
         this.elements = [];
         this.rotatedElements = [];
@@ -36,21 +37,6 @@ class Block {
     rotate() {
         this.elements = this.rotatedElements;
         this.rotatedElements = this.elements.map(pos => ({x: pos.y, y: this.size - pos.x - 1}));
-    }
-
-    draw(pos) {
-        globals.context.fillStyle = this.color;
-        globals.context.strokeStyle = "#FFFFFF";
-
-        globals.context.beginPath();
-        this.elements.forEach((block) => {
-            globals.context.rect(
-                 40 * (pos.x + block.x),
-                -40 * (pos.y + block.y) + globals.yOffset,
-                40, 40);
-        });
-        globals.context.fill();
-        globals.context.stroke();
     }
 
     forEachElem(func) {

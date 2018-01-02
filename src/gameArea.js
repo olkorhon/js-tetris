@@ -6,7 +6,7 @@ class GameArea {
         this.bufferHeight = bufferHeight;
         this.displayedHeight = displayedHeight;
 
-        globals.yOffset = (bufferHeight - displayedHeight - 1) * 40;
+        this.yOffset = (bufferHeight - displayedHeight - 1);
     }
 
     getWidth()  { return this.bufferWidth;  }
@@ -56,13 +56,15 @@ class GameArea {
 
         if (completeLines.length > 0)
             this.removeLines(completeLines);
+
+        return completeLines.length;
     }
 
     removeLines(lines) {
         let offset = 0;
         for (let j = 0; j < this.bufferHeight; j++) {
             if (lines.includes(j)) {
-                offset --;
+                offset--;
                 continue;
             }
 
@@ -94,22 +96,43 @@ class GameArea {
         }
     }
 
-    draw() {
-        globals.context.strokeStyle = "#FFFFFF";
+    draw(canvas) {
+        const blockWidth = canvas.width   / this.bufferWidth;
+        const blockHeight = canvas.height / this.displayedHeight;
+        
         for (let i = 0; i < this.bufferWidth; i++) {
             for (let j = 0; j < this.bufferHeight; j++) {
                 if (this.area[i + j * this.bufferWidth]) {
-                    globals.context.beginPath();
-                    globals.context.fillStyle = this.area[i + j * this.bufferWidth];
-                    globals.context.rect(
-                        40 * i,
-                        -40 * j + globals.yOffset,
-                        40, 40);
-                    globals.context.fill();
-                    globals.context.stroke();
+                    canvas.beginPath();
+                    canvas.drawBlock(
+                         blockWidth  * i,
+                        -blockHeight * j + blockHeight * this.yOffset,
+                         blockWidth,
+                         blockHeight,
+                        this.area[i + j * this.bufferWidth]);
+                    
+                    canvas.fillShape();
+                    canvas.drawShapeOutline();
                 }
             }
         }
-        
+    }
+
+    drawSingleBlock(canvas, pos, tetromino) {
+        const blockWidth  = canvas.width  / this.bufferWidth;
+        const blockHeight = canvas.height / this.displayedHeight;
+
+        canvas.beginPath();
+        tetromino.forEachElem((block) => {
+            canvas.drawBlock(
+                 blockWidth  * (pos.x + block.x),
+                -blockHeight * (pos.y + block.y) + blockHeight * this.yOffset,
+                 blockWidth,
+                 blockHeight,
+                tetromino.color);
+        });
+
+        canvas.fillShape();
+        canvas.drawShapeOutline();
     }
 }
