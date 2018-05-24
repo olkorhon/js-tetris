@@ -4,7 +4,14 @@ const colors = [
     "#FF7700"
 ];
 
-function generateBlock(blockSize) {
+const idRotationTable = [
+    1,  5,  3,  7,
+    0,  4,  2,  6,
+    9, 13, 14, 11,
+    8, 12, 10, 15
+];
+
+function generateBlock(blockImage) {
     let chosenTemplate = getRandomTetrominoe();
 
     const name = chosenTemplate.name;
@@ -12,23 +19,24 @@ function generateBlock(blockSize) {
     const data = JSON.parse(JSON.stringify(chosenTemplate.template));
     const color = colors[Math.floor(Math.random() * colors.length)];
 
-    return new Block(name, size, data, color, blockSize);
+    return new Block(name, size, data, color, blockImage);
 }
 
 class Block {
-    constructor(name, size, data, color, blockSize) {
+    constructor(name, size, data, color, blockImage) {
         this.name = name;
         this.size = size;
         this.color = color;
-        this.blockSize = blockSize;
+        this.blockImage = blockImage;
 
         this.elements = [];
         this.rotatedElements = [];
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
-                if (data[i + j * this.size] === 1) {
-                    this.elements.push({x: i, y: j});
-                    this.rotatedElements.push({x: j, y: this.size - i - 1});
+                const id = data[i + j * this.size];
+                if (id !== -1) {
+                    this.elements.push({x: i, y: j, id: id});
+                    this.rotatedElements.push({x: j, y: this.size - i - 1, id: idRotationTable[id]});
                 }
             }
         }
@@ -36,7 +44,7 @@ class Block {
 
     rotate() {
         this.elements = this.rotatedElements;
-        this.rotatedElements = this.elements.map(pos => ({x: pos.y, y: this.size - pos.x - 1}));
+        this.rotatedElements = this.elements.map(pos => ({x: pos.y, y: this.size - pos.x - 1, id: idRotationTable[pos.id]}));
     }
 
     forEachElem(func) {

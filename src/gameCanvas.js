@@ -20,11 +20,13 @@ function gameOnload() {
     canvas.style.background = "black";
     canvas.focus();
 
+    const blockImages = document.getElementById("blocks");
+
     const gameCanvas = new Canvas(canvas);
     const statusCanvas = new Canvas(canvas);
 
     gameArea = new GameArea(10, 40, 20);
-    game = new Game(gameCanvas, gameArea);
+    game = new Game(gameCanvas, gameArea, blockImages);
 
     // Call advance frame on set interval
     setInterval(game.advanceFrame.bind(game), 500);

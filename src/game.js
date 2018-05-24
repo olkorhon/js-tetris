@@ -10,14 +10,14 @@ const scoreTable = [
 ];
 
 class Game {
-    constructor(canvas, gameArea) {
+    constructor(canvas, gameArea, blockImages) {
         this.isPaused = false;
 
         this.gameCanvas = canvas;
         this.gameArea = gameArea;
-        this.blockPos = {x: 3, y: 20};
+        this.blockImages = blockImages;
 
-        this.currentBlock = generateBlock();
+        this.currentTetromino = this.createNewBlock();
         this.moveBuffer = undefined;
         this.moveLocked = false;
 
@@ -37,17 +37,17 @@ class Game {
             return;
         }
 
-        if (!this.currentBlock.someRotatedElem(pos => this.gameArea.checkCollision(pos, this.blockPos))) {
+        if (!this.currentTetromino.someRotatedElem(pos => this.gameArea.checkCollision(pos, this.blockPos))) {
             //console.log("Good rotate!");
-            this.currentBlock.rotate();
+            this.currentTetromino.rotate();
         } else {
             // Try to kick from walls
             for (let i = 0; i < kickOffsets.length; i++) {
                 let offset = genCopy(this.blockPos, kickOffsets[i].x, kickOffsets[i].y);
-                if (!this.currentBlock.someRotatedElem(pos => this.gameArea.checkCollision(pos, offset))) {
+                if (!this.currentTetromino.someRotatedElem(pos => this.gameArea.checkCollision(pos, offset))) {
                     //console.log("Kicked!");
                     this.blockPos = genCopy(this.blockPos, kickOffsets[i].x, kickOffsets[i].y);
-                    this.currentBlock.rotate();
+                    this.currentTetromino.rotate();
                     break;
                 }
             }
@@ -65,13 +65,13 @@ class Game {
             return;
         }
 
-        while (!this.currentBlock.someElem(
+        while (!this.currentTetromino.someElem(
             pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)))) {
                 this.blockPos.y -= 1;
         }
 
         this.placeTetromino();
-        this.createNewBlock();
+        this.currentTetromino = this.createNewBlock();
 
         this.drawFrame();
     }
@@ -85,7 +85,7 @@ class Game {
             return;
         }
 
-        if (!this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, -1, 0))))
+        if (!this.currentTetromino.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, -1, 0))))
             this.blockPos.x -= 1;
 
         this.drawFrame();
@@ -100,15 +100,15 @@ class Game {
             return;
         }
 
-        if (!this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 1, 0))))
+        if (!this.currentTetromino.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 1, 0))))
             this.blockPos.x += 1;
 
         this.drawFrame();
     }
 
     createNewBlock() {
-        this.currentBlock = generateBlock(); 
         this.blockPos = {x: 3, y: 20};
+        return generateBlock(this.blockImages); 
     }
 
     advanceFrame() {
@@ -117,11 +117,11 @@ class Game {
             this.moveLocked = true;
             
             // Check future
-            let collisionImminent = this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)));
+            let collisionImminent = this.currentTetromino.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)));
             if (collisionImminent)
             {
                 this.placeTetromino();
-                this.createNewBlock();
+                this.currentTetromino = this.createNewBlock();
             }
             else {
                 this.blockPos.y -= 1;
@@ -138,7 +138,7 @@ class Game {
     }
 
     placeTetromino() {
-        const deletedLines = this.gameArea.applyBlock(this.blockPos, this.currentBlock);
+        const deletedLines = this.gameArea.applyTetromino(this.blockPos, this.currentTetromino);
         if (deletedLines > 0) {
             const pointValue = scoreTable[0][deletedLines];
             this.score += pointValue;
@@ -149,8 +149,8 @@ class Game {
     drawFrame() {
         // Clear the current drawing area
         this.gameCanvas.clear();
-        this.gameArea.draw(this.gameCanvas);
-        this.gameArea.drawSingleBlock(this.gameCanvas, this.blockPos, this.currentBlock);
+        this.gameArea.draw(this.gameCanvas, this.blockImages);
+        this.gameArea.drawSingleBlock(this.gameCanvas, this.blockImages, this.blockPos, this.currentTetromino);
     
         if (this.isPaused) {
             this.drawPauseOverlay();

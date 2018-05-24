@@ -35,20 +35,20 @@ class GameArea {
         }
     }
 
-    setTile(x, y, color) {
+    setTileId(x, y, id) {
         this.enforceBounds(x, y);
-        this.area[x + y * this.bufferWidth] = color;
+        this.area[x + y * this.bufferWidth] = id;
     }
-    getTile(x, y) {
+    getTileId(x, y) {
         this.enforceBounds(x, y);
         return this.area[x + y * this.bufferWidth];
     }
 
-    applyBlock(pos, block) {
+    applyTetromino(pos, tetromino) {
         let touchedLines = {};
-        block.forEachElem((elemPos) => {
-            this.setTile(pos.x + elemPos.x, pos.y + elemPos.y, block.color);
-            touchedLines[(pos.y + elemPos.y).toString()] = true;
+        tetromino.forEachElem((block) => {
+            this.setTileId(pos.x + block.x, pos.y + block.y, block.id);
+            touchedLines[(pos.y + block.y).toString()] = true;
         });
 
         let filteredLines = Object.keys(touchedLines).map(number => parseInt(number, 10));
@@ -90,27 +90,28 @@ class GameArea {
 
     checkCollision(pos, offset={x:0, y:0}) {
         try {
-            return this.getTile(pos.x + offset.x, pos.y + offset.y) !== undefined;
+            return this.getTileId(pos.x + offset.x, pos.y + offset.y) !== undefined;
         } catch (error) {
             return true;
         }
     }
 
-    draw(canvas) {
+    draw(canvas, blockImages) {
         const blockWidth = canvas.width   / this.bufferWidth;
         const blockHeight = canvas.height / this.displayedHeight;
         
         for (let i = 0; i < this.bufferWidth; i++) {
             for (let j = 0; j < this.bufferHeight; j++) {
-                if (this.area[i + j * this.bufferWidth]) {
+                if (this.area[i + j * this.bufferWidth] !== -1) {
                     canvas.beginPath();
-                    canvas.drawBlock(
-                         blockWidth  * i,
-                        -blockHeight * j + blockHeight * this.yOffset,
-                         blockWidth,
-                         blockHeight,
-                        this.area[i + j * this.bufferWidth]);
-                    
+                    canvas.drawImageBlock(
+                            blockWidth  * i,
+                           -blockHeight * j + blockHeight * this.yOffset,
+                            blockWidth,
+                            blockHeight,
+                            blockImages,
+                            this.area[i + j * this.bufferWidth]);
+
                     canvas.fillShape();
                     canvas.drawShapeOutline();
                 }
@@ -118,18 +119,19 @@ class GameArea {
         }
     }
 
-    drawSingleBlock(canvas, pos, tetromino) {
+    drawSingleBlock(canvas, blockImages, pos, tetromino) {
         const blockWidth  = canvas.width  / this.bufferWidth;
         const blockHeight = canvas.height / this.displayedHeight;
 
         canvas.beginPath();
         tetromino.forEachElem((block) => {
-            canvas.drawBlock(
-                 blockWidth  * (pos.x + block.x),
+            canvas.drawImageBlock(
+                blockWidth  * (pos.x + block.x),
                 -blockHeight * (pos.y + block.y) + blockHeight * this.yOffset,
-                 blockWidth,
-                 blockHeight,
-                tetromino.color);
+                blockWidth,
+                blockHeight,
+                blockImages,
+                block.id);
         });
 
         canvas.fillShape();

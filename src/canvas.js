@@ -32,6 +32,16 @@ class Canvas {
         this.context.rect(x, y, width, height);
     }
 
+    drawImageBlock(x, y, width, height, blockImages, id) {
+        this.context.drawImage(
+            blockImages,
+            64 * (id % 4),
+            64 * Math.floor(id / 4),
+            64,
+            64,
+            x, y, width, height);
+    }
+
     drawShapeOutline() {
         this.context.stroke();
     }
