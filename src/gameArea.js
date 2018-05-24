@@ -101,10 +101,7 @@ class GameArea {
                 if (this.area[i + j * this.bufferWidth]) {
                     globals.context.beginPath();
                     globals.context.fillStyle = this.area[i + j * this.bufferWidth];
-                    globals.context.rect(
-                        40 * i,
-                        -40 * j + globals.yOffset,
-                        40, 40);
+                    globals.context.rect(40 * i, -40 * j + globals.yOffset, 40, 40);
                     globals.context.fill();
                     globals.context.stroke();
                 }

@@ -4,20 +4,9 @@
 </head>
 
 <body>
-    <!-- Scripts, so many scripts -->
-    <script>const globals = {}</script>
-    <script src="src/tetrominoes.js"></script>
-    <script src="src/gameArea.js">   </script>
-    <script src="src/block.js">      </script>
-    <script src="src/game.js">       </script>
-    <script>window.onload = start;             </script>
-    <script>window.onkeydown = onKeyboardEvent;</script>
-
-    <!-- Main body of the page -->
-    <!-- 
     <img id="tiles" width="0" height="0" src="graphics/mahjong_tiles.png">
     <img id="bg" width="0" heigh="0" src="graphics/mahjong_bg.png">
-    -->
+
     <canvas id="canvas" width="400" height="800" style="border:2px solid #d3d3d3;">
     Your browser does not support the HTML5 canvas tag.
     </canvas>
@@ -33,5 +22,17 @@
     }
     </style>
 
+    <!-- Scripts, so many scripts -->
+    <script>
+        globals = {}
+        globals.canvas = document.getElementById("canvas");
+        globals.context = globals.canvas.getContext("2d");    
+    </script>
+    <script src="src/tetrominoes.js"></script>
+    <script src="src/gameArea.js">   </script>
+    <script src="src/block.js">      </script>
+    <script src="src/game.js">       </script>
+    <script>window.onload = start;             </script>
+    <script>window.onkeydown = onKeyboardEvent;</script>
 </body>
 </html>

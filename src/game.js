@@ -2,6 +2,7 @@ const gameArea = globals.gameArea = new GameArea(10, 40, 20);
 let currentBlock;
 
 let blockPos = {x: 3, y:20};
+let isPaused = false;
 
 let moveLocked = false;
 let moveBuffer;
@@ -14,8 +15,6 @@ let kickOffsets = [
 ];
 
 function start() {
-    globals.canvas = document.getElementById("canvas");
-    globals.context = canvas.getContext("2d");
     globals.canvas.focus();
     globals.canvas.style.background = "black";
 
@@ -31,28 +30,26 @@ function genCopy(pos, offsetX, offsetY) {
 }
 
 function onKeyboardEvent(e) {
+    const applyInput = (actionFunction) => {
+        if (moveLocked) moveBuffer = actionFunction;
+        else            actionFunction();
+    }
+
     let key = e.keyCode ? e.keyCode : e.which;
-    if (key == 38) {
-        if (moveLocked) moveBuffer = rotate;
-        else            rotate();
-    }
-    if (key == 40) {
-        if (moveLocked) moveBuffer = skipToContact;
-        else            skipToContact();
-    }
-    if (key == 37) {
-        if (moveLocked) moveBuffer = moveLeft;
-        else            moveLeft();
-    }
-    if (key == 39) {
-        if (moveLocked) moveBuffer = moveRight;
-        else            moveRight();
-    }
+
+    if (key == 38) applyInput(rotate);
+    if (key == 40) applyInput(skipToContact);
+    if (key == 37) applyInput(moveLeft);
+    if (key == 39) applyInput(moveRight);
+    if (key == 32) applyInput(togglePause);
 
     refreshScreen();
-}
+} 
 
 function rotate() {
+    if (isPaused)
+        return;
+
     if (!currentBlock.someRotatedElem(pos => gameArea.checkCollision(pos, blockPos))) {
         //console.log("Good rotate!");
         currentBlock.rotate();
@@ -71,6 +68,9 @@ function rotate() {
 }
 
 function skipToContact() {
+    if (isPaused)
+        return;
+
     while (!currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 0, -1)))) {
         blockPos.y -= 1;
     }
@@ -80,11 +80,17 @@ function skipToContact() {
 }
 
 function moveLeft() {
+    if (isPaused)
+        return;
+
     if (!currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, -1, 0))))
         blockPos.x -= 1;
 }
 
 function moveRight() {
+    if (isPaused)
+        return;
+
     if (!currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 1, 0))))
         blockPos.x += 1;
 }
@@ -95,27 +101,29 @@ function createNewBlock() {
 }
 
 function frame() {
-    // Move block
-    moveLocked = true;
-    
-    // Check future
-    let collisionImminent = currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 0, -1)));
-    if (collisionImminent)
-    {
-        //console.log("Collision imminent");
-        gameArea.applyBlock(blockPos, currentBlock);
-        blockApplied = true;
-        createNewBlock();
-    }
-    else {
-        blockPos.y -= 1;
-    }
+    if (!isPaused) {
+        // Move block
+        moveLocked = true;
+        
+        // Check future
+        let collisionImminent = currentBlock.someElem(pos => gameArea.checkCollision(pos, genCopy(blockPos, 0, -1)));
+        if (collisionImminent)
+        {
+            //console.log("Collision imminent");
+            gameArea.applyBlock(blockPos, currentBlock);
+            blockApplied = true;
+            createNewBlock();
+        }
+        else {
+            blockPos.y -= 1;
+        }
 
-    // Release move lock
-    moveLocked = false;
-    if (moveBuffer) {
-        moveBuffer();
-        moveBuffer = undefined;
+        // Release move lock
+        moveLocked = false;
+        if (moveBuffer) {
+            moveBuffer();
+            moveBuffer = undefined;
+        }
     }
 
     refreshScreen();
@@ -124,10 +132,31 @@ function frame() {
     setTimeout(frame, 500);
 }
 
+function togglePause() {
+    isPaused = !isPaused;
+}
+
 function refreshScreen() {
     // Clear the current drawing area
     globals.context.clearRect(0, 0, globals.canvas.width, globals.canvas.height);
 
     gameArea.draw();
     currentBlock.draw(blockPos);
+
+    if (isPaused)
+        drawPauseOverlay();
+}
+
+function drawPauseOverlay() {
+    globals.context.fillStyle = "#222222BB";
+
+    globals.context.beginPath();
+    globals.context.rect(0, 0, globals.canvas.width, globals.canvas.height);
+    globals.context.fill();
+
+    globals.context.beginPath();
+    globals.context.fillStyle = "White";//"#FFFFFFFFF";
+    globals.context.font = '42px "Comic Sans MS"';
+    globals.context.textAlign = "center";
+    globals.context.fillText("PAUSED", globals.canvas.width / 2, globals.canvas.height / 2);
 }
