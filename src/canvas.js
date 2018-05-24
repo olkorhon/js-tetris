@@ -7,6 +7,21 @@ class Canvas {
         this.height = this.canvasElement.height;
     }
 
+    fillBg(color) {
+        this.context.beginPath();
+        this.context.fillStyle = color;
+        this.context.rect(0, 0, this.width, this.height);
+        this.context.fill();
+    }
+
+    drawText(text, x, y, alignment, font='42px "Comic Sans MS"') {
+        this.context.beginPath();
+        this.context.fillStyle = "White";
+        this.context.font = font;
+        this.context.textAlign = alignment;
+        this.context.fillText(text, x, y);
+    }
+
     beginPath() {
         this.context.beginPath();
     }

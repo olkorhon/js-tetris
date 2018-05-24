@@ -1,6 +1,3 @@
-let moveLocked = false;
-let moveBuffer;
-
 const kickOffsets = [
     {x: -1, y:  0},
     {x:  1, y:  0},
@@ -14,6 +11,8 @@ const scoreTable = [
 
 class Game {
     constructor(canvas, gameArea) {
+        this.isPaused = false;
+
         this.gameCanvas = canvas;
         this.gameArea = gameArea;
         this.blockPos = {x: 3, y: 20};
@@ -30,8 +29,11 @@ class Game {
     }
 
     rotate() {
-        if (moveLocked) {
-            moveBuffer = rotate.bind(this);;
+        if (this.isPaused)
+            return;
+
+        if (this.moveLocked) {
+            this.moveBuffer = this.rotate.bind(this);;
             return;
         }
 
@@ -55,8 +57,11 @@ class Game {
     }
 
     skipToContact() {
-        if (moveLocked) {
-            moveBuffer = skipToContact.bind(this);;
+        if (this.isPaused)
+            return;
+
+        if (this.moveLocked) {
+            this.moveBuffer = this.skipToContact.bind(this);;
             return;
         }
 
@@ -72,8 +77,11 @@ class Game {
     }
 
     moveLeft() {
-        if (moveLocked) {
-            moveBuffer = moveLeft.bind(this);;
+        if (this.isPaused)
+            return;
+
+        if (this.moveLocked) {
+            this.moveBuffer = this.moveLeft.bind(this);;
             return;
         }
 
@@ -84,8 +92,11 @@ class Game {
     }
 
     moveRight() {
-        if (moveLocked) {
-            moveBuffer = moveRight.bind(this);
+        if (this.isPaused)
+            return;
+
+        if (this.moveLocked) {
+            this.moveBuffer = this.moveRight.bind(this);
             return;
         }
 
@@ -101,27 +112,28 @@ class Game {
     }
 
     advanceFrame() {
-        // Disable moving during update
-        moveLocked = true;
-        
-        // Check future
-        let collisionImminent = this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)));
-        if (collisionImminent)
-        {
-            this.placeTetromino();
-            this.createNewBlock();
-        }
-        else {
-            this.blockPos.y -= 1;
-        }
+        if (!this.isPaused) {
+            // Disable moving during update
+            this.moveLocked = true;
+            
+            // Check future
+            let collisionImminent = this.currentBlock.someElem(pos => this.gameArea.checkCollision(pos, this.genCopy(this.blockPos, 0, -1)));
+            if (collisionImminent)
+            {
+                this.placeTetromino();
+                this.createNewBlock();
+            }
+            else {
+                this.blockPos.y -= 1;
+            }
 
-        // Release move lock
-        moveLocked = false;
-        if (moveBuffer) {
-            moveBuffer();
-            moveBuffer = undefined;
+            // Release move lock
+            this.moveLocked = false;
+            if (this.moveBuffer) {
+                this.moveBuffer();
+                this.moveBuffer = undefined;
+            }
         }
-
         this.drawFrame();
     }
 
@@ -139,5 +151,24 @@ class Game {
         this.gameCanvas.clear();
         this.gameArea.draw(this.gameCanvas);
         this.gameArea.drawSingleBlock(this.gameCanvas, this.blockPos, this.currentBlock);
+    
+        if (this.isPaused) {
+            this.drawPauseOverlay();
+        }
+    }
+
+    drawPauseOverlay() {
+        this.gameCanvas.fillBg("#222222BB");
+        this.gameCanvas.drawText(
+            "PAUSED",
+            this.gameCanvas.width / 2,
+            this.gameCanvas.height / 2,
+            "center"
+        );
+    }
+
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        this.drawFrame();
     }
 }

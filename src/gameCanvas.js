@@ -4,18 +4,11 @@ const blockSize = undefined;
 
 function onKeyboardEvent(e) {
     let key = e.keyCode ? e.keyCode : e.which;
-    if (key == 38) {
-        game.rotate();
-    }
-    if (key == 40) {
-        game.skipToContact();
-    }
-    if (key == 37) {
-        game.moveLeft();
-    }
-    if (key == 39) {
-        game.moveRight();
-    }
+    if (key == 38) game.rotate();
+    if (key == 40) game.skipToContact();
+    if (key == 37) game.moveLeft();
+    if (key == 39) game.moveRight();
+    if (key == 32) game.togglePause();
 }
 
 window.addEventListener("load", gameOnload);
