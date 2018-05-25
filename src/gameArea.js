@@ -35,11 +35,11 @@ class GameArea {
         }
     }
 
-    setTileId(x, y, id) {
+    setTile(x, y, colorVariant, id) {
         this.enforceBounds(x, y);
-        this.area[x + y * this.bufferWidth] = id;
+        this.area[x + y * this.bufferWidth] = {colorVariant: colorVariant, id: id};
     }
-    getTileId(x, y) {
+    getTile(x, y) {
         this.enforceBounds(x, y);
         return this.area[x + y * this.bufferWidth];
     }
@@ -47,7 +47,7 @@ class GameArea {
     applyTetromino(pos, tetromino) {
         let touchedLines = {};
         tetromino.forEachElem((block) => {
-            this.setTileId(pos.x + block.x, pos.y + block.y, block.id);
+            this.setTile(pos.x + block.x, pos.y + block.y, tetromino.colorVariant, block.id);
             touchedLines[(pos.y + block.y).toString()] = true;
         });
 
@@ -90,7 +90,7 @@ class GameArea {
 
     checkCollision(pos, offset={x:0, y:0}) {
         try {
-            return this.getTileId(pos.x + offset.x, pos.y + offset.y) !== undefined;
+            return this.getTile(pos.x + offset.x, pos.y + offset.y) !== undefined;
         } catch (error) {
             return true;
         }
@@ -102,15 +102,17 @@ class GameArea {
         
         for (let i = 0; i < this.bufferWidth; i++) {
             for (let j = 0; j < this.bufferHeight; j++) {
-                if (this.area[i + j * this.bufferWidth] !== -1) {
+                const tile = this.getTile(i, j);
+                if (tile !== -1 && tile !== undefined) {
                     canvas.beginPath();
                     canvas.drawImageBlock(
-                            blockWidth  * i,
-                           -blockHeight * j + blockHeight * this.yOffset,
-                            blockWidth,
-                            blockHeight,
-                            blockImages,
-                            this.area[i + j * this.bufferWidth]);
+                        blockWidth * i,
+                        -blockHeight * j + blockHeight * this.yOffset,
+                        blockWidth,
+                        blockHeight,
+                        blockImages,
+                        tile.colorVariant,
+                        tile.id);
 
                     canvas.fillShape();
                     canvas.drawShapeOutline();
@@ -131,6 +133,7 @@ class GameArea {
                 blockWidth,
                 blockHeight,
                 blockImages,
+                tetromino.colorVariant,
                 block.id);
         });
 

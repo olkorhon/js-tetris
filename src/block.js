@@ -1,9 +1,4 @@
-const colors = [
-    "#FF0000", "#00FF00", "#0000FF",
-    "#FFFF00", "#FF00FF", "#00FFFF",
-    "#FF7700"
-];
-
+const colorVariants = [0, 1, 2];
 const idRotationTable = [
     1,  5,  3,  7,
     0,  4,  2,  6,
@@ -11,23 +6,23 @@ const idRotationTable = [
     8, 12, 10, 15
 ];
 
-function generateBlock(blockImage) {
+function generateBlock(blockImages) {
     let chosenTemplate = getRandomTetrominoe();
 
     const name = chosenTemplate.name;
     const size = chosenTemplate.size;
     const data = JSON.parse(JSON.stringify(chosenTemplate.template));
-    const color = colors[Math.floor(Math.random() * colors.length)];
+    const colorVariant = colorVariants[Math.floor(Math.random() * colorVariants.length)];
 
-    return new Block(name, size, data, color, blockImage);
+    return new Tetromino(name, size, data, colorVariant, blockImages);
 }
 
-class Block {
-    constructor(name, size, data, color, blockImage) {
+class Tetromino {
+    constructor(name, size, data, colorVariant, blockImages) {
         this.name = name;
         this.size = size;
-        this.color = color;
-        this.blockImage = blockImage;
+        this.colorVariant = colorVariant;
+        this.blockImages = blockImages;
 
         this.elements = [];
         this.rotatedElements = [];
