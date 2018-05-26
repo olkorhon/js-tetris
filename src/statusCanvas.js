@@ -30,5 +30,6 @@ function statusOnload() {
 function refresh(context, score) {
     context.clearRect(0, 0, statusCanvasWidth, statusCanvasHeight);
     context.font = "30px Arial";
-    context.fillText(score, 0, 30);
+    context.fillStyle = "white";
+    context.fillText(score, 8, 30);
 }

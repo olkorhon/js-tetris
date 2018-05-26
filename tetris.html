@@ -15,17 +15,16 @@
     <script src="src/block.js">      </script>
     <script src="src/game.js">       </script>
 
-    <script src="src/gameCanvas.js">      </script>
     <script src="src/statusCanvas.js">    </script>
 
     <img id="blocks" width="0" height="0" src="blockVariants.png">
 
     <!-- Main body of the page -->
-    <div id="gameArea">
-        <canvas id="gameCanvas" width="400" height="800" style="border:2px solid #d3d3d3;">
+    <div id="gameArea" style="background: url('./gridMain.png');">
+        <canvas id="gameCanvas" width="400" height="800" style="border:0px solid #d3d3d3;">
         Your browser does not support the HTML5 canvas tag.
         </canvas>
-        <canvas id="statusCanvas" width="400" height="40" style="border:2px solid #d3d3d3;">
+        <canvas id="statusCanvas" width="180" height="40" style="border:0px solid #d3d3d3;">
         Your browser does not support the HTML5 canvas tag.
         </canvas>
     </div>
@@ -34,20 +33,23 @@
     <style>
     #gameCanvas {
         position: absolute;
-        top: 0%; left: 25%;
+        top: 30px; left: 30px;
         width: 300px;
         height: 600px;
-        margin: 0px 150px 0px 150px;
+        margin: 0px 0px 0px 0px;
     }
     #statusCanvas {
         position: absolute;
-        top:600px; left: 25%;
-        width: 300px;
-        height: 32px;
-        margin: 0px 150px 0px 150px;
+        top: 300px; left: 360px;
+        width: 180px;
+        height: 40px;
+        margin: 0px 0px 0px 0px;
     }
     #gameArea {
-        top: 0%; left: 25%;
+        position: absolute;
+        top: 5%; left: 25%;
+        width: 570px;
+        height: 660px;
     }
     </style>
 </body>
