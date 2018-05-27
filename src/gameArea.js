@@ -115,7 +115,6 @@ class GameArea {
                         tile.id);
 
                     canvas.fillShape();
-                    canvas.drawShapeOutline();
                 }
             }
         }
@@ -138,6 +137,5 @@ class GameArea {
         });
 
         canvas.fillShape();
-        canvas.drawShapeOutline();
     }
 }

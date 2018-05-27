@@ -10,11 +10,6 @@ function statusOnload() {
     statusCanvasWidth = canvas.width;
     statusCanvasHeight = canvas.height;
 
-    if (!game) {
-        console.log("Aborting status load, no game to attach status window to!");
-        return;
-    }
-
     console.log("Event triggered: load");
     const context = canvas.getContext("2d");
 

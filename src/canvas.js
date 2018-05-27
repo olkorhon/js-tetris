@@ -26,12 +26,6 @@ class Canvas {
         this.context.beginPath();
     }
 
-    drawBlock(x, y, width, height, fillColor, outlineColor="#FFFFFF") {
-        this.context.fillStyle = fillColor;
-        this.context.strokeStyle = outlineColor;
-        this.context.rect(x, y, width, height);
-    }
-
     drawImageBlock(x, y, width, height, blockImages, colorVariant, id) {
         this.context.drawImage(
             blockImages,
@@ -57,11 +51,11 @@ class Canvas {
 
 function onKeyboardEvent(e) {
     let key = e.keyCode ? e.keyCode : e.which;
-    if (key == 38) game.rotate();
-    if (key == 40) game.skipToContact();
-    if (key == 37) game.moveLeft();
-    if (key == 39) game.moveRight();
-    if (key == 32) game.togglePause();
+    if (key == 38) this.rotate();
+    if (key == 40) this.skipToContact();
+    if (key == 37) this.moveLeft();
+    if (key == 39) this.moveRight();
+    if (key == 32) this.togglePause();
 }
 
 window.addEventListener("load", gameOnload);
@@ -69,19 +63,17 @@ function gameOnload() {
     console.log("Event triggered: load");
 
     window.removeEventListener("load", gameOnload);
-    const canvas = document.getElementById("gameCanvas");
+    const canvasGame = document.getElementById("gameCanvas");
+    const gameCanvas = new Canvas(canvasGame);
+
     //canvas.style.background = "black";
-    canvas.focus();
+    canvasGame.focus();
 
     const blockImages = document.getElementById("blocks");
-
-    const gameCanvas = new Canvas(canvas);
-    const statusCanvas = new Canvas(canvas);
-
-    gameArea = new GameArea(10, 40, 20);
-    game = new Game(gameCanvas, gameArea, blockImages);
+    const gameArea = new GameArea(10, 40, 20);
+    const game = new Game(gameCanvas, gameArea, blockImages);
 
     // Call advance frame on set interval
     setInterval(game.advanceFrame.bind(game), 500);
+    window.onkeydown = onKeyboardEvent.bind(game);
 };
-window.onkeydown = onKeyboardEvent;

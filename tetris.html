@@ -6,27 +6,25 @@
 <body>
     <!-- Scripts, so many scripts -->
     <script>const globals = {}</script>
-
-    <script src="src/eventBus.js">   </script>
-    <script src="src/canvas.js">     </script>
-
-    <script src="src/tetrominoes.js"></script>
-    <script src="src/gameArea.js">   </script>
-    <script src="src/block.js">      </script>
-    <script src="src/game.js">       </script>
-
-    <script src="src/statusCanvas.js">    </script>
+    <script src="src/tetromino.js">          </script>
+    <script src="src/eventBus.js">           </script>
+    <script src="src/tetrominoes.js">        </script>
+    <script src="src/gameArea.js">           </script>
+    <script src="src/game.js">               </script>
+    <script src="src/canvasStatus.js">       </script>
+    <script src="src/canvasNextTetromino.js"></script>
+    <script src="src/canvas.js">             </script>
 
     <img id="blocks" width="0" height="0" src="blockVariants.png">
 
     <!-- Main body of the page -->
     <div id="gameArea" style="background: url('./gridMain.png');">
-        <canvas id="gameCanvas" width="400" height="800" style="border:0px solid #d3d3d3;">
-        Your browser does not support the HTML5 canvas tag.
-        </canvas>
-        <canvas id="statusCanvas" width="180" height="40" style="border:0px solid #d3d3d3;">
-        Your browser does not support the HTML5 canvas tag.
-        </canvas>
+        <canvas id="gameCanvas" width="400" height="800">
+            Your browser does not support the HTML5 canvas tag.</canvas>
+        <canvas id="nextCanvas"   width="180" height="120">
+            Your browser does not support the HTML5 canvas tag.</canvas>
+        <canvas id="statusCanvas" width="180" height="40">
+            Your browser does not support the HTML5 canvas tag.</canvas>
     </div>
     
     <!-- Centering canvas both vertically and horizontally -->
@@ -36,14 +34,18 @@
         top: 30px; left: 30px;
         width: 300px;
         height: 600px;
-        margin: 0px 0px 0px 0px;
+    }
+    #nextCanvas {
+        position: absolute;
+        top: 120px; left: 360px;
+        width: 180px;
+        height: 120px;
     }
     #statusCanvas {
         position: absolute;
         top: 300px; left: 360px;
         width: 180px;
         height: 40px;
-        margin: 0px 0px 0px 0px;
     }
     #gameArea {
         position: absolute;

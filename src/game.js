@@ -18,6 +18,9 @@ class Game {
         this.blockImages = blockImages;
 
         this.currentTetromino = this.createNewBlock();
+        this.nextTetronimo = this.createNewBlock();
+        emit("tetrominoChange", this.nextTetronimo);
+
         this.moveBuffer = undefined;
         this.moveLocked = false;
 
@@ -71,7 +74,9 @@ class Game {
         }
 
         this.placeTetromino();
-        this.currentTetromino = this.createNewBlock();
+        this.currentTetromino = this.nextTetronimo;
+        this.nextTetronimo = this.createNewBlock();
+        emit("tetrominoChange", this.nextTetronimo);
 
         this.drawFrame();
     }
@@ -108,7 +113,7 @@ class Game {
 
     createNewBlock() {
         this.blockPos = {x: 3, y: 20};
-        return generateBlock(this.blockImages); 
+        return Tetromino.generate(this.blockImages); 
     }
 
     advanceFrame() {
@@ -121,7 +126,9 @@ class Game {
             if (collisionImminent)
             {
                 this.placeTetromino();
-                this.currentTetromino = this.createNewBlock();
+                this.currentTetromino = this.nextTetronimo;
+                this.nextTetronimo = this.createNewBlock();
+                emit("tetrominoChange", this.nextTetronimo);
             }
             else {
                 this.blockPos.y -= 1;
